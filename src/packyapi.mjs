@@ -3,8 +3,9 @@
 // API key, which is a token bound to one or more groups).
 //
 // Relay and console hosts are chosen independently: a working /v1 does not
-// mean that /api works on the same host. Keep the old single-host mapping
-// only for sign-ins that predate the console selector.
+// mean that /api works on the same host. Since the console moved (Nov
+// 2026), sign-ins with no explicit console choice use www.packyapi.com,
+// independently of their relay. An explicit console selection is honored.
 
 import { json } from "./http.mjs"
 
@@ -29,17 +30,20 @@ export const CONSOLE_ENDPOINTS = [
   { value: "www", label: "主站 www.packyapi.com" },
 ]
 
-export function inferBase(endpoint) {
+function selectedBase(endpoint) {
   if (Object.hasOwn(HOSTS, endpoint)) return HOSTS[endpoint]
   // The plugin's options accept complete URLs; sign-in prompts use
   // short ids. Only these exact HTTPS origins (and a trailing /) are valid.
-  return Object.values(HOSTS).find((host) => endpoint === host || endpoint === host + "/") ?? HOSTS.slb
+  return Object.values(HOSTS).find((host) => endpoint === host || endpoint === host + "/")
 }
 
-/** Explicit console choices are used as given; missing ones retain legacy routing. */
-export function consoleBase(consoleEndpoint, endpoint = "slb") {
-  const legacy = inferBase(endpoint) === HOSTS.cf ? "slb" : endpoint
-  return inferBase(consoleEndpoint || legacy)
+export function inferBase(endpoint) {
+  return selectedBase(endpoint) ?? HOSTS.slb
+}
+
+/** Explicit console choices win; older sign-ins use the migrated console. */
+export function consoleBase(consoleEndpoint) {
+  return selectedBase(consoleEndpoint) ?? HOSTS.www
 }
 
 const ua = "magpie-packycode/0.1 (+magpie plugin)"
@@ -68,7 +72,7 @@ export class PackyAPI {
   }
 
   get console() {
-    return consoleBase(this.consoleEndpoint, this.endpoint)
+    return consoleBase(this.consoleEndpoint)
   }
 
   get signedIn() {

@@ -64,11 +64,14 @@ test("only PackyAPI's hosts are ever contacted", () => {
       assert.ok(allowed.has(host), `${f} talks to ${host}`)
     }
   }
-  // anything else falls back to the default host rather than being fetched
+  // the console and the relay are separate hosts since Nov 2026; an unknown
+  // endpoint falls back to the default pair rather than being fetched
   assert.equal(inferBase("elsewhere.example"), "https://slb-v1.api.fan")
   assert.equal(consoleBase("cf"), "https://cf.api.fan")
-  assert.equal(consoleBase(undefined, "cf"), "https://slb-v1.api.fan")
-  assert.equal(consoleBase("nonsense"), "https://slb-v1.api.fan")
+  assert.equal(consoleBase(), "https://www.packyapi.com")
+  assert.equal(consoleBase("nonsense"), "https://www.packyapi.com")
+  assert.equal(consoleBase("slb"), "https://slb-v1.api.fan")
+  assert.equal(inferBase("www"), "https://www.packyapi.com")
 })
 
 test("nothing in the package looks like a real credential or a personal path", () => {

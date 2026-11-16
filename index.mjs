@@ -54,7 +54,7 @@ export async function PackycodeAuthPlugin(input, settings = {}) {
   const worldOf = (auth) => {
     const md = auth?.metadata ?? {}
     const endpoint = settings.model_endpoint || md.endpoint || "slb"
-    const consoleEndpoint = settings.config_endpoint || md.consoleEndpoint || consoleBase(undefined, md.endpoint)
+    const consoleEndpoint = settings.config_endpoint || md.consoleEndpoint || consoleBase()
     const key = md.email || auth?.key || "anonymous"
     const sig = JSON.stringify([auth?.key ?? "", md.mode ?? "", md.userID ?? "", endpoint, consoleEndpoint ?? "", md.keys ?? [], md.groups ?? {}])
     let w = worlds.get(key)

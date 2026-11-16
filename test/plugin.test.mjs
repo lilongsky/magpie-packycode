@@ -125,7 +125,7 @@ test("changing only the account's config endpoint invalidates its cached data", 
 })
 
 for (const [settings, modelHost, configHost] of [
-  [{ model_endpoint: "https://www.packyapi.ai" }, "www.packyapi.ai", "slb-v1.api.fan"],
+  [{ model_endpoint: "https://www.packyapi.ai" }, "www.packyapi.ai", "www.packyapi.com"],
   [{ config_endpoint: "https://www.packyapi.ai" }, "slb-v1.api.fan", "www.packyapi.ai"],
 ]) {
   test(`setting only ${Object.keys(settings)[0]} leaves the other endpoint unchanged`, async () => {

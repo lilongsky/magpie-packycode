@@ -77,15 +77,15 @@ for (const endpoint of ["ai", "cf", "slb", "www"]) {
   }
 }
 
-test("older sign-ins retain their routing until the user chooses endpoints", () => {
-  for (const [endpoint, host] of [["slb", "slb-v1.api.fan"], ["cf", "slb-v1.api.fan"], ["www", "www.packyapi.com"]]) {
+test("older sign-ins follow the moved console while retaining their relay", () => {
+  for (const endpoint of ["slb", "cf", "ai", "www"]) {
     const api = new PackyAPI({ endpoint })
-    assert.equal(api.console, `https://${host}`)
+    assert.equal(api.console, "https://www.packyapi.com")
     assert.equal(api.infer, inferBase(endpoint) + "/v1")
   }
   for (const value of ["https://elsewhere.example", "__proto__", "constructor"]) {
     assert.equal(inferBase(value), "https://slb-v1.api.fan")
-    assert.equal(consoleBase(value), "https://slb-v1.api.fan")
+    assert.equal(consoleBase(value), "https://www.packyapi.com")
   }
 })
 
@@ -98,9 +98,9 @@ test("the Options values accept only known full origins or short ids", () => {
   }
   for (const endpoint of ["https://cf.api.fan.evil.example", "https://www.packyapi.ai@evil.example", "http://cf.api.fan", "https://cf.api.fan/v1", "https://cf.api.fan?host=elsewhere"]) {
     assert.equal(inferBase(endpoint), "https://slb-v1.api.fan")
-    assert.equal(consoleBase(endpoint), "https://slb-v1.api.fan")
+    assert.equal(consoleBase(endpoint), "https://www.packyapi.com")
   }
-  assert.equal(consoleBase(undefined, "https://cf.api.fan"), "https://slb-v1.api.fan")
+  assert.equal(consoleBase(), "https://www.packyapi.com")
 })
 
 test("an unavailable console reports the selected host, path and setting to change", async () => {
@@ -127,7 +127,10 @@ test("a failed token-list read preserves the saved keys", async () => {
       urls.push(url)
       return new Response("", { status: 200 })
     }, dir)
-    await assert.rejects(() => world.keys(), /200 with an empty body/)
+    const keys = await world.keys()
+    assert.equal(keys.length, 1)
+    assert.equal(keys[0].key, made.cheap.key)
+    assert.deepEqual(keys[0].groups, ["cheap"])
     assert.deepEqual(world.made, made)
     assert.equal(fs.readFileSync(path.join(dir, "packycode-keys.json"), "utf8"), before)
     assert.equal(urls.length, 1)

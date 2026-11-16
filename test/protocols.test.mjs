@@ -34,6 +34,9 @@ test("the cheapest Responses-only group makes the catalog advertise Responses", 
     const catalog = buildCatalog({ pricing, keys: accountKeys })
     assert.equal(catalog[MODEL].api.npm, "@ai-sdk/openai")
     assert.equal(catalog[MODEL].cost.input, 0.6)
+    assert.equal(catalog[MODEL].rate, 0.3)
+    assert.equal(catalog[MODEL].rateWas, 1)
+    assert.equal(catalog[MODEL].name, "Grok 4.7")
   }
 })
 
